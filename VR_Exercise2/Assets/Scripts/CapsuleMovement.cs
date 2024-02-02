@@ -2,6 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.Windows.Speech;
+using System;
+using System.Linq;
 
 public class CapsuleMovement : MonoBehaviour
 
@@ -12,6 +15,9 @@ public class CapsuleMovement : MonoBehaviour
     private float speed;
     private bool onGround;
     private int coinCounter;
+    private KeywordRecognizer keywordRecognizer;
+    private Dictionary<string, Action> actions = new Dictionary<string, Action>();
+ 
     // Start is called before the first frame update
     void Start()
     {
@@ -19,6 +25,10 @@ public class CapsuleMovement : MonoBehaviour
         speed = 3.0f;
         onGround = false;
         coinCounter = 0;
+        actions.Add("finish", Finish);
+        keywordRecognizer = new KeywordRecognizer(actions.Keys.ToArray());
+        keywordRecognizer.OnPhraseRecognized += Speech;
+        keywordRecognizer.Start();
     }
 
     // Update is called once per frame
@@ -61,12 +71,27 @@ public class CapsuleMovement : MonoBehaviour
             myBody.velocity = new Vector3(0, 0, 0);
         }
         coinText.SetText("Coins Collected = " + coinCounter.ToString());
-        if(coinCounter == 5)
+        /*if(coinCounter == 5)
+        {
+            coinText.SetText("Game Finished");
+        }*/
+    }
+    private void Speech(PhraseRecognizedEventArgs speech)
+    {
+        Debug.Log("Keyword: " + speech.text);
+        actions[speech.text].Invoke();
+    }
+    private void Finish()
+    {
+        if (coinCounter == 5)
         {
             coinText.SetText("Game Finished");
         }
+        else
+        {
+            coinText.SetText("Game NOT Finished!!");
+        }
     }
-
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.tag == "Ground")
