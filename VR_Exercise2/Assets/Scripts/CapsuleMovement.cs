@@ -11,7 +11,12 @@ public class CapsuleMovement : MonoBehaviour
 {
     public Rigidbody myBody;
     public TMP_Text coinText;
+    public TMP_Text finishText;
     public GameObject allCoins;
+    private bool gameFinished;
+    private bool finishTrigger;
+    private float finishTextDuration = 3.0f;
+    private float finishTexTimer = 0.0f;
     private float speed;
     private bool onGround;
     private int coinCounter;
@@ -29,6 +34,8 @@ public class CapsuleMovement : MonoBehaviour
         keywordRecognizer = new KeywordRecognizer(actions.Keys.ToArray());
         keywordRecognizer.OnPhraseRecognized += Speech;
         keywordRecognizer.Start();
+        gameFinished = false;
+        finishTrigger = false;
     }
 
     // Update is called once per frame
@@ -75,6 +82,42 @@ public class CapsuleMovement : MonoBehaviour
         {
             coinText.SetText("Game Finished");
         }*/
+        if(finishTrigger)
+        {
+            if (gameFinished)
+            {
+                finishText.SetText("Game Finished");
+                finishTexTimer += Time.deltaTime;
+
+                if (finishTexTimer >= finishTextDuration)
+                {
+                    finishText.SetText("");
+                    gameFinished = false;
+                    finishTexTimer = 0.0f;
+                }
+                else
+                {
+                    coinText.SetText("Coins Collected = " + coinCounter.ToString());
+                }
+            }
+            else
+            {
+                finishText.SetText("Game Not Finished!!");
+                finishTexTimer += Time.deltaTime;
+
+                if (finishTexTimer >= finishTextDuration)
+                {
+                    finishText.SetText("");
+                    gameFinished = false;
+                    finishTexTimer = 0.0f;
+                }
+                else
+                {
+                    coinText.SetText("Coins Collected = " + coinCounter.ToString());
+                }
+            }
+            finishTrigger = false;
+        }
     }
     private void Speech(PhraseRecognizedEventArgs speech)
     {
@@ -83,13 +126,15 @@ public class CapsuleMovement : MonoBehaviour
     }
     private void Finish()
     {
-        if (coinCounter == 5)
+        Debug.Log("Reached Finish");
+        finishTrigger = true;
+        if(coinCounter == 5)
         {
-            coinText.SetText("Game Finished");
+            gameFinished = true;
         }
         else
         {
-            coinText.SetText("Game NOT Finished!!");
+            gameFinished = false;
         }
     }
     private void OnCollisionEnter(Collision collision)
